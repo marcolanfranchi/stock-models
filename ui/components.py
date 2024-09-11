@@ -1,6 +1,8 @@
 import streamlit as st
 from streamlit_extras.row import row
+import plotly.express as px
 import pandas as pd
+import numpy as np
 
 def stock_header(stock_metadata):
     # Extract the stock symbol and long name from the metadata dataframe (for col2)
@@ -39,7 +41,23 @@ def stock_header(stock_metadata):
                 """, unsafe_allow_html=True)
 
 
+def stock_chart_section(stock_data):
+    pass
 
-def stock_chart(stock_data):
-    st.write(stock_data)
-    st.line_chart(stock_data['chart_previous_close'])
+
+def stock_chart(stock_data, time_period='365 days'):
+    # Convert the time_period string into a proper Timedelta
+    time_delta = pd.Timedelta(time_period)
+    
+    # Filter the data based on the time_period
+    start_date = pd.Timestamp.now().date() - time_delta
+    filtered_data = stock_data[stock_data['date'] >= start_date]
+    
+    # Ensure the data is sorted by date
+    filtered_data = filtered_data.sort_values(by='date')
+    
+    # Plot the data
+    fig = px.line(filtered_data, x="date", y="close_price", title="Stock Price Over Time")
+    fig.update_traces(line=dict(width=4))  # Set desired width (e.g., 4)
+    st.plotly_chart(fig)
+

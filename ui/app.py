@@ -3,6 +3,7 @@ import pandas as pd
 from dotenv import load_dotenv
 import os
 import psycopg2
+import plotly.figure_factory as ff
 from components import stock_chart, stock_header
 
 # load environment variables from .env file
@@ -40,11 +41,18 @@ conn = psycopg2.connect(
 # conn.autocommit = True
 cursor = conn.cursor()
 
-# Load the stock metadata from the database
-stock_metadata = pd.read_sql(f"SELECT * FROM public.lu_stock WHERE symbol = '{selected_stock}'", conn)
+# load the stock metadata from the database
+stock_metadata = pd.read_sql(
+    f"SELECT * FROM public.lu_stock WHERE symbol = '{selected_stock}'",
+    conn)
+
+# load the stock data from the database
+stock_data = pd.read_sql(
+    f"SELECT * FROM public.stocks WHERE ticker = '{selected_stock}'",
+    conn)
 
 # metadata_row(stock_metadata)
 stock_header(stock_metadata)
-stock_chart(stock_metadata)
+stock_chart(stock_data)
 
 
