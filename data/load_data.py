@@ -3,6 +3,7 @@ import psycopg2
 import yfinance as yf
 from dotenv import load_dotenv
 import datetime as dt
+import pandas as pd
 
 # load environment variables
 load_dotenv()
@@ -34,7 +35,6 @@ def insert_stock_data(ticker_symbol, hist_data):
         cursor.execute("""
             INSERT INTO stocks (ticker, date, open_price, close_price, high_price, low_price, volume)
             VALUES (%s, %s, %s, %s, %s, %s, %s)
-            WHERE date >= '2000-01-01'
             ON CONFLICT (ticker, date) DO UPDATE SET 
                 open_price = EXCLUDED.open_price,
                 close_price = EXCLUDED.close_price,
@@ -78,24 +78,26 @@ def insert_stock_metadata(ticker_symbol, metadata):
           metadata.get('timezone'), metadata.get('exchangeTimezoneName')))
 
 if __name__ == "__main__":
-    ticker_symbol = os.sys.argv[1:]
-    stock = yf.Ticker(ticker_symbol)
-    
-    # Fetch historical market data
-    hist = stock.history(period="max")
+    stocks = pd.read_csv('data/stocks.csv')['symbol'].tolist()
+    for ticker_symbol in stocks:
+        print(f"Fetching data for {ticker_symbol}...")
+        stock = yf.Ticker(ticker_symbol)
+        # Fetch historical market data
+        hist = stock.history(period="max")
 
-    # Fetch stock metadata
-    metadata = stock.history_metadata
+        # Fetch stock metadata
+        metadata = stock.history_metadata
 
-    # Insert stock data
-    insert_stock_data(ticker_symbol, hist)
-    print("Stock Data inserted successfully.")
+        # Insert stock data
+        insert_stock_data(ticker_symbol, hist)
+        print("Stock Data inserted successfully.")
 
-     # Insert stock metadata into lu_stock table
-    if metadata:
-        insert_stock_metadata(ticker_symbol, metadata)
-    
-    print(f"Metadata for {ticker_symbol} inserted successfully.")
+        # Insert stock metadata into lu_stock table
+        if metadata:
+            insert_stock_metadata(ticker_symbol, metadata)
+        
+        print(f"Metadata for {ticker_symbol} inserted successfully.")
+     
 
     # Close the connection
     cursor.close()
