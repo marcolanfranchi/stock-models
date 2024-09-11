@@ -3,6 +3,7 @@ import pandas as pd
 from dotenv import load_dotenv
 import os
 import psycopg2
+from components import stock_chart, stock_header
 
 # load environment variables from .env file
 load_dotenv()
@@ -27,9 +28,6 @@ st.write("a simple web app to display different models that i've built for predi
 stocks = pd.read_csv('data/stocks.csv')['symbol'].tolist()
 selected_stock = st.selectbox('Select a stock', stocks, index=0)
 st.write("---")
-st.markdown(f"""
-    <h1 style='text-align: right; font-size: 60px;'>{selected_stock}</h1>
-""", unsafe_allow_html=True)
 
 # Connect to the PostgreSQL server
 conn = psycopg2.connect(
@@ -44,9 +42,9 @@ cursor = conn.cursor()
 
 # Load the stock metadata from the database
 stock_metadata = pd.read_sql(f"SELECT * FROM public.lu_stock WHERE symbol = '{selected_stock}'", conn)
-st.write(stock_metadata)
-# Load the stock data from the database
-# stock_data = pd.read_sql(f"SELECT * FROM stocks WHERE ticker = '{selected_stock}'", conn)
 
+# metadata_row(stock_metadata)
+stock_header(stock_metadata)
+stock_chart(stock_metadata)
 
 
