@@ -4,8 +4,9 @@ from dotenv import load_dotenv
 import os
 import psycopg2
 import plotly.figure_factory as ff
-from components import stock_header, stock_chart_section
-
+from ui.components import stock_header, stock_chart_section
+from data.load_data import main as refresh_database
+import time
 # load environment variables from .env file
 load_dotenv()
 
@@ -22,7 +23,19 @@ st.set_page_config(
     layout="wide"
 )
 
-st.title('stock-models')
+titleCol, refreshCol = st.columns([10, 1])
+with titleCol:
+    st.title('stock-models')
+with refreshCol:
+    st.write("")
+    # st.write("")
+    if st.button('refresh data'):
+        refresh_database()
+        text_placeholder = st.empty()
+        text_placeholder.write("data refreshed successfully.")
+        time.sleep(3)
+        text_placeholder.empty()
+
 st.write("a simple web app to display different models that i've built for predicting stock prices.") 
 
 

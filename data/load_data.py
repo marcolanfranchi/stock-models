@@ -5,29 +5,7 @@ from dotenv import load_dotenv
 import datetime as dt
 import pandas as pd
 
-# load environment variables
-load_dotenv()
-
-# get database connection details from environment variables
-DB_NAME = os.getenv('DB_NAME')
-DB_USER = os.getenv('DB_USER')
-DB_PASSWORD = os.getenv('DB_PASSWORD')
-DB_HOST = os.getenv('DB_HOST', 'localhost')
-DB_PORT = os.getenv('DB_PORT', '5432')
-
-# connect to PostgreSQL
-conn = psycopg2.connect(
-    dbname=DB_NAME,
-    user=DB_USER,
-    password=DB_PASSWORD,
-    host=DB_HOST,
-    port=DB_PORT
-)
-conn.autocommit = True
-cursor = conn.cursor()
-
-
-def insert_stock_data(ticker_symbol, hist_data):
+def insert_stock_data(ticker_symbol, hist_data, cursor):
     """
     inserts stock data into the stocks table
     """
@@ -44,7 +22,7 @@ def insert_stock_data(ticker_symbol, hist_data):
         """, (ticker_symbol, date, float(row['Open']), float(row['Close']), float(row['High']), float(row['Low']), float(row['Volume'])))
 
 # Function to insert stock metadata into the lu_stock table
-def insert_stock_metadata(ticker_symbol, metadata):
+def insert_stock_metadata(ticker_symbol, metadata, cursor):
     cursor.execute("""
         INSERT INTO lu_stock (symbol, currency, exchange_name, full_exchange_name, instrument_type, 
                               first_trade_date, regular_market_price, fifty_two_week_high, fifty_two_week_low, 
@@ -76,8 +54,30 @@ def insert_stock_metadata(ticker_symbol, metadata):
           metadata.get('regularMarketDayHigh'), metadata.get('regularMarketDayLow'), metadata.get('regularMarketVolume'),
           metadata.get('longName'), metadata.get('shortName'), metadata.get('chartPreviousClose'),
           metadata.get('timezone'), metadata.get('exchangeTimezoneName')))
+    
+def main():
 
-if __name__ == "__main__":
+    # load environment variables
+    load_dotenv()
+
+    # get database connection details from environment variables
+    DB_NAME = os.getenv('DB_NAME')
+    DB_USER = os.getenv('DB_USER')
+    DB_PASSWORD = os.getenv('DB_PASSWORD')
+    DB_HOST = os.getenv('DB_HOST', 'localhost')
+    DB_PORT = os.getenv('DB_PORT', '5432')
+
+    # connect to PostgreSQL
+    conn = psycopg2.connect(
+        dbname=DB_NAME,
+        user=DB_USER,
+        password=DB_PASSWORD,
+        host=DB_HOST,
+        port=DB_PORT
+    )
+    conn.autocommit = True
+    cursor = conn.cursor()
+
     stocks = pd.read_csv('data/stocks.csv')['symbol'].tolist()
     for ticker_symbol in stocks:
         print(f"Fetching data for {ticker_symbol}...")
@@ -89,12 +89,12 @@ if __name__ == "__main__":
         metadata = stock.history_metadata
 
         # Insert stock data
-        insert_stock_data(ticker_symbol, hist)
+        insert_stock_data(ticker_symbol, hist, cursor)
         print("Stock Data inserted successfully.")
 
         # Insert stock metadata into lu_stock table
         if metadata:
-            insert_stock_metadata(ticker_symbol, metadata)
+            insert_stock_metadata(ticker_symbol, metadata, cursor)
         
         print(f"Metadata for {ticker_symbol} inserted successfully.")
      
@@ -102,3 +102,6 @@ if __name__ == "__main__":
     # Close the connection
     cursor.close()
     conn.close()
+
+if __name__ == "__main__":
+    main()

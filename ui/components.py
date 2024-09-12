@@ -23,16 +23,16 @@ def stock_header(stock_metadata):
         subcol1, subcol2, subcol3, subcol4 = st.columns([1, 1, 1, 1])
         with subcol1:
             st.markdown("**exchange**")
-            st.markdown(f"*{exchange_name}*")
+            st.markdown(f"`{exchange_name}`")
         with subcol2:  
             st.markdown("**currency**")
-            st.markdown(f"*{currency}*")
+            st.markdown(f"`{currency}`")
         with subcol3:
             st.markdown("**stock type**")
-            st.markdown(f"*{instrument_type}*")
+            st.markdown(f"`{instrument_type}`")
         with subcol4:
             st.markdown("**first trade**")
-            st.markdown(f"*{pd.to_datetime(first_trade_date).date()}*")
+            st.markdown(f"`{pd.to_datetime(first_trade_date).date()}`")
     with col2:
         st.markdown(f"""
                     <h1 style='text-align: right; font-size: 60px;'>{symbol}</h1>
@@ -63,23 +63,39 @@ def stock_chart_section(stock_data):
             # 52-week high
             st.markdown("<p style='text-align: right;'><strong>52-week high</strong></p>", unsafe_allow_html=True)
             st.markdown(f"""
-                <p style='text-align: right;'>${yearly_high:,.2f}</p>
+                <p style='text-align: right;'><strong>${yearly_high:,.2f}</strong></p>
                 """, unsafe_allow_html=True)
         with subcol2:
             # 52-week low
             st.markdown("<p style='text-align: right;'><strong>52-week low</strong></p>", unsafe_allow_html=True)
             st.markdown(f"""
-                <p style='text-align: right;'>${yearly_low:,.2f}</p>
+                <p style='text-align: right;'><strong>${yearly_low:,.2f}</strong></p>
                 """, unsafe_allow_html=True)
         with subcol3:
             # volume
             st.markdown("<p style='text-align: right;'><strong>volume</strong></p>", unsafe_allow_html=True)
             st.markdown(f"""
-                <p style='text-align: right;'>{volume:,.0f}</p>
+                <p style='text-align: right;'><strong>{volume:,.0f}<strong></p>
                 """, unsafe_allow_html=True)
 
+    time_frame = st.radio('time frame:', 
+                          ['1 week', '1 month', '1 year', '5 years', 'max'], 
+                          index=0,
+                          horizontal=True)
     # plot the chart        
-    stock_chart(stock_data)
+    stock_chart(stock_data, time_period=to_time_period(time_frame))
+
+def to_time_period(time_frame):
+    if time_frame == '1 week':
+        return '7 days'
+    elif time_frame == '1 month':
+        return '30 days'
+    elif time_frame == '1 year':
+        return '365 days'
+    elif time_frame == '5 years':
+        return '1825 days'
+    else:
+        return '45545 days'
 
 
 
