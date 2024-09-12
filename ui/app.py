@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 import os
 import psycopg2
 import plotly.figure_factory as ff
-from components import stock_chart, stock_header
+from components import stock_header, stock_chart_section
 
 # load environment variables from .env file
 load_dotenv()
@@ -53,6 +53,6 @@ stock_data = pd.read_sql(
 
 # metadata_row(stock_metadata)
 stock_header(stock_metadata)
-stock_chart(stock_data)
+stock_chart_section(stock_data)
 
 
