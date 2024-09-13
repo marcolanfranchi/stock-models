@@ -61,7 +61,7 @@ stock_metadata = pd.read_sql(
 
 # load the stock data from the database
 stock_data = pd.read_sql(
-    f"SELECT * FROM public.stocks WHERE ticker = '{selected_stock}'",
+    f"SELECT * FROM public.stocks WHERE ticker = '{selected_stock}' order by date asc",
     conn)
 
 # metadata_row(stock_metadata)

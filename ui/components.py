@@ -52,7 +52,7 @@ def stock_chart_section(stock_data):
                     <h1 style='font-size: 60px;'>${stock_data['close_price'].values[-1]:,.2f}</h1>
                     """, unsafe_allow_html=True) 
         st.markdown(f"""
-                    <p style='font-size: 18px;'>{stock_data['date'].values[-1]}</p>
+                    <p style='font-size: 18px;'>as of {stock_data['date'].values[-1]}</p>
                     """, unsafe_allow_html=True)       
     with col2:
         yearly_high = stock_data[stock_data['date'] >= (pd.Timestamp.now().date() - pd.Timedelta('365 days'))]['close_price'].max()
@@ -78,7 +78,7 @@ def stock_chart_section(stock_data):
                 <p style='text-align: right;'><strong>{volume:,.0f}<strong></p>
                 """, unsafe_allow_html=True)
 
-    time_frame = st.radio('time frame:', 
+    time_frame = st.radio('',
                           ['1 week', '1 month', '1 year', '5 years', 'max'], 
                           index=0,
                           horizontal=True)
