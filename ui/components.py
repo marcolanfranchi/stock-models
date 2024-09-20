@@ -5,6 +5,9 @@ import pandas as pd
 import numpy as np
 
 def stock_header(stock_metadata):
+    """
+    UI component to display the stock information
+    """
     # Extract the stock symbol and long name from the metadata dataframe (for col2)
     symbol = stock_metadata['symbol'].values[0]        
     long_name = stock_metadata['long_name'].values[0]
@@ -55,9 +58,10 @@ def stock_chart_section(stock_data):
                     <p style='font-size: 18px;'>as of {stock_data['date'].values[-1]}</p>
                     """, unsafe_allow_html=True)       
     with col2:
-        yearly_high = stock_data[stock_data['date'] >= (pd.Timestamp.now().date() - pd.Timedelta('365 days'))]['close_price'].max()
-        yearly_low = stock_data[stock_data['date'] >= (pd.Timestamp.now().date() - pd.Timedelta('365 days'))]['close_price'].min()
-        volume = stock_data['volume'].values[-1]
+        # yearly_high = stock_data[stock_data['date'] >= (pd.Timestamp.now().date() - pd.Timedelta('365 days'))]['close_price'].max()
+        # yearly_low = stock_data[stock_data['date'] >= (pd.Timestamp.now().date() - pd.Timedelta('365 days'))]['close_price'].min()
+        # volume = stock_data['volume'].values[-1]
+        yearly_high, yearly_low, volume = 0, 0, 0
         subcol1, subcol2, subcol3 = st.columns([1, 1, 1])
         with subcol1:
             # 52-week high
@@ -78,14 +82,39 @@ def stock_chart_section(stock_data):
                 <p style='text-align: right;'><strong>{volume:,.0f}<strong></p>
                 """, unsafe_allow_html=True)
 
-    time_frame = st.radio('',
-                          ['1 week', '1 month', '1 year', '5 years', 'max'], 
-                          index=0,
-                          horizontal=True)
+
     # plot the chart        
-    stock_chart(stock_data, time_period=to_time_period(time_frame))
+    stock_chart(stock_data)
+
+
+
+def stock_chart(stock_data):
+    time_frame = st.radio('',
+                        ['1 week', '1 month', '1 year', '5 years', 'max'], 
+                        index=0,
+                        horizontal=True)
+    time_period = to_time_period(time_frame)
+    # Convert the time_period string into a proper Timedelta
+    time_delta = pd.Timedelta(time_period)
+    
+    # Filter the data based on the time_period
+    # start_date = pd.Timestamp.now().date() - time_delta
+    # filtered_data = stock_data[stock_data['date'] >= start_date]
+    filtered_data = stock_data.copy()
+    
+    # Ensure the data is sorted by date
+    filtered_data = filtered_data.sort_values(by='date')
+    
+    # Plot the data
+    fig = px.line(filtered_data, x="date", y="close_price")
+    fig.update_traces(line=dict(width=4))  # Set desired width (e.g., 4)
+    st.plotly_chart(fig)
+
 
 def to_time_period(time_frame):
+    """
+    converts the time_frame string into a proper time_period string for pandas Timedelta
+    """
     if time_frame == '1 week':
         return '7 days'
     elif time_frame == '1 month':
@@ -96,22 +125,3 @@ def to_time_period(time_frame):
         return '1825 days'
     else:
         return '45545 days'
-
-
-
-def stock_chart(stock_data, time_period='365 days'):
-    # Convert the time_period string into a proper Timedelta
-    time_delta = pd.Timedelta(time_period)
-    
-    # Filter the data based on the time_period
-    start_date = pd.Timestamp.now().date() - time_delta
-    filtered_data = stock_data[stock_data['date'] >= start_date]
-    
-    # Ensure the data is sorted by date
-    filtered_data = filtered_data.sort_values(by='date')
-    
-    # Plot the data
-    fig = px.line(filtered_data, x="date", y="close_price")
-    fig.update_traces(line=dict(width=4))  # Set desired width (e.g., 4)
-    st.plotly_chart(fig)
-

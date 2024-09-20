@@ -19,7 +19,9 @@ def insert_stock_data(ticker_symbol, hist_data, cursor):
                 high_price = EXCLUDED.high_price,
                 low_price = EXCLUDED.low_price,
                 volume = EXCLUDED.volume
-        """, (ticker_symbol, date, float(row['Open']), float(row['Close']), float(row['High']), float(row['Low']), float(row['Volume'])))
+        """, (ticker_symbol, date.date(),  
+            float(row['Open']), float(row['Close']), float(row['High']),
+            float(row['Low']), float(row['Volume'])))
 
 # Function to insert stock metadata into the lu_stock table
 def insert_stock_metadata(ticker_symbol, metadata, cursor):
@@ -84,6 +86,7 @@ def main():
         stock = yf.Ticker(ticker_symbol)
         # Fetch historical market data
         hist = stock.history(period="max")
+        hist.index = hist.index.tz_convert('UTC')
 
         # Fetch stock metadata
         metadata = stock.history_metadata

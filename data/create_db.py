@@ -19,18 +19,16 @@ CREATE_TABLE_QUERIES = [
     CREATE TABLE IF NOT EXISTS stocks (
         id SERIAL PRIMARY KEY,
         ticker VARCHAR(10) NOT NULL,
-        date DATE NOT NULL,
+        date TIMESTAMPTZ NOT NULL,
         open_price NUMERIC(10, 2),
         close_price NUMERIC(10, 2),
         high_price NUMERIC(10, 2),
         low_price NUMERIC(10, 2),
         volume BIGINT,
-        UNIQUE (ticker, date)  -- This ensures no duplicate (ticker, date) pairs are allowed
-    );
-
+        UNIQUE (ticker, date)
+);
     """,
 
-    
     """
     CREATE TABLE IF NOT EXISTS lu_stock (
         id SERIAL PRIMARY KEY,
@@ -72,7 +70,7 @@ def create_database():
         for query in CREATE_TABLE_QUERIES:
             cursor.execute(query)
         
-        print("Database and tables created successfully.")
+        print("Tables created successfully.")
 
     except Exception as e:
         print(f"Error creating database: {e}")
