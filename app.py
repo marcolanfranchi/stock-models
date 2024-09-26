@@ -7,6 +7,7 @@ import plotly.figure_factory as ff
 from ui.components import stock_header, stock_chart_section
 from data.load_data import main as refresh_database
 import time
+
 # load environment variables from .env file
 load_dotenv()
 
@@ -28,19 +29,22 @@ with titleCol:
     st.title('stock-models')
 with refreshCol:
     st.write("")
-    # st.write("")
+    st.write("")
     if st.button('refresh data'):
         refresh_database()
+        # placeholder for the text
         text_placeholder = st.empty()
+        # show text for 3 seconds
         text_placeholder.write("data refreshed successfully.")
         time.sleep(3)
+        # clear the text
         text_placeholder.empty()
 
-st.write("a simple web app to display different models that i've built for predicting stock prices.") 
-
+st.write("a simple web app to display different models that i've built for predicting individual stock prices.") 
 
 stocks = pd.read_csv('data/stocks.csv')['symbol'].tolist()
-selected_stock = st.selectbox('Select a stock', stocks, index=0)
+stocks.sort()
+selected_stock = st.sidebar.selectbox('Select a stock', stocks, index=0)
 st.write("---")
 
 # Connect to the PostgreSQL server
