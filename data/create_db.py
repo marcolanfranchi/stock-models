@@ -15,6 +15,7 @@ DB_PORT = os.getenv('DB_PORT', '5432')
 
 # create table queries
 CREATE_TABLE_QUERIES = [
+    # create the stocks table
     """
     CREATE TABLE IF NOT EXISTS stocks (
         id SERIAL PRIMARY KEY,
@@ -26,13 +27,14 @@ CREATE_TABLE_QUERIES = [
         low_price NUMERIC(10, 2),
         volume BIGINT,
         UNIQUE (ticker, date)
-);
+    );
     """,
 
+    # create the stock metadata table
     """
     CREATE TABLE IF NOT EXISTS lu_stock (
         id SERIAL PRIMARY KEY,
-        symbol VARCHAR(10) NOT NULL UNIQUE,
+        ticker VARCHAR(10) NOT NULL UNIQUE,
         currency VARCHAR(10),
         exchange_name VARCHAR(50),
         full_exchange_name VARCHAR(50),
@@ -48,9 +50,23 @@ CREATE_TABLE_QUERIES = [
         short_name VARCHAR(255),
         chart_previous_close NUMERIC(10, 4),
         timezone VARCHAR(50),
-        exchange_timezone_name VARCHAR(50)
-);
-"""
+        exchange_timezone_name VARCHAR(50),
+        last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+    """
+#     , 
+
+#     # create the stock news table
+#     """
+#     CREATE TABLE IF NOT EXISTS stock_news (
+#         id SERIAL PRIMARY KEY,
+#         ticker VARCHAR(10) NOT NULL,
+#         model_name VARCHAR(50) NOT NULL,
+#         model_description TEXT,
+#         model_file BYTEA,
+#         last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+# );
+# """
 ]
 
 def create_database():

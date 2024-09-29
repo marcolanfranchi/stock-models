@@ -1,127 +1,185 @@
 import streamlit as st
-from streamlit_extras.row import row
 import plotly.express as px
 import pandas as pd
-import numpy as np
 
-def stock_header(stock_metadata):
+def stock_header_with_info(stock_metadata, stock_data):
     """
-    UI component to display the stock information
+    UI component to display basic stock information (name and current price)
     """
-    # Extract the stock symbol and long name from the metadata dataframe (for col2)
-    symbol = stock_metadata['symbol'].values[0]        
+    ticker = stock_metadata['ticker'].values[0]
     long_name = stock_metadata['long_name'].values[0]
 
-    # Extract other metadata (for col1)
+    col1, col2 = st.columns([1, 3])
+    with col1:
+        st.markdown(f"<h1 style='font-size: 48px;'>{ticker}</h1>", unsafe_allow_html=True)
+        st.markdown(f"<p style='font-size: 18px;'>{long_name}</p>", unsafe_allow_html=True)
+    with col2:
+        st.write("")
+        display_info_tabs(stock_metadata, stock_data)
+
+        
+def display_info_tabs(stock_metadata, stock_data):
+    """
+    tabs to display general stock information, daily stats, and 52-week stats
+    """
+    tabs = st.tabs(['General', 'Daily Stats', '52-week Stats'])
+    with tabs[0]:
+        display_general_info(stock_metadata)
+    with tabs[1]:
+        display_daily_stats(stock_metadata)
+    with tabs[2]:
+        display_52_week_stats(stock_data)
+
+
+def display_general_info(stock_metadata):
+    """
+    display exchange, currency, stock type, and volume
+    """
     exchange_name = stock_metadata['exchange_name'].values[0]
     currency = stock_metadata['currency'].values[0]
     instrument_type = stock_metadata['instrument_type'].values[0]
-    first_trade_date = stock_metadata['first_trade_date'].values[0]
+    # first_trade_date = stock_metadata['first_trade_date'].values[0]
+    volume = stock_metadata['regular_market_volume'].values[0]
+    subcol1, subcol2, subcol3, subcol4, subcol5 = st.columns([1, 1, 1, 1, 4])
+    with subcol1:
+        st.markdown("*exchange*")
+        st.markdown(f'<span style="font-size:18px;">`{exchange_name}`</span>', unsafe_allow_html=True)
+    with subcol2:  
+        st.markdown("*currency*")
+        st.markdown(f'<span style="font-size:18px;">`{currency}`</span>', unsafe_allow_html=True)
+    with subcol3:
+        st.markdown("*stock type*")
+        st.markdown(f'<span style="font-size:18px;">`{instrument_type}`</span>', unsafe_allow_html=True)
+    with subcol4:
+        st.markdown("*volume*")
+        st.markdown(f'<span style="font-size:18px;">`{volume:,.0f}`</span>', unsafe_allow_html=True)
+    with subcol5:
+        pass
 
-    col1, col2 = st.columns([1, 1])
+def display_daily_stats(stock_metadata):
+    """
+    display current price, daily low, and daily high
+    """
+    current_price = stock_metadata['regular_market_price'][0]
+    daily_low = stock_metadata['regular_market_day_low'][0]
+    daily_high = stock_metadata['regular_market_day_high'][0]
+    subcol1, subcol2, subcol3, subcol4 = st.columns([1, 1, 1, 4])
+    with subcol1:
+        st.markdown("*current price*")
+        st.markdown(f'<span style="font-size:18px;">`${current_price:,.2f}`</span>', unsafe_allow_html=True)
+
+    with subcol2:
+        st.markdown("*daily high*")
+        st.markdown(f'<span style="font-size:18px;">`${daily_high:,.2f}`</span>', unsafe_allow_html=True)
+    
+    with subcol3:  
+        st.markdown("*daily low*")
+        st.markdown(f'<span style="font-size:18px;">`${daily_low:,.2f}`</span>', unsafe_allow_html=True)
+    with subcol4:
+        pass
+
+def display_52_week_stats(stock_data):
+    """
+    display 52-week high and 52-week low
+    """
+    year_data = filter_stock_data(stock_data, '365 days')
+    high_52_week = year_data['close_price'].max()
+    low_52_week = year_data['close_price'].min()
+    subcol1, subcol2, subcol3 = st.columns([1, 1, 6])
+    with subcol1:
+        st.markdown("*52-week high*")
+        st.markdown(f'<span style="font-size:18px;">`${high_52_week:,.2f}`</span>', unsafe_allow_html=True)
+    with subcol2:
+        st.markdown("*52-week low*")
+        st.markdown(f'<span style="font-size:18px;">`${low_52_week:,.2f}`</span>', unsafe_allow_html=True)
+
+
+def stock_chart(stock_data, stock_metadata):
+    """
+    display stock chart and price difference information
+    """
+    col1, col2 = st.columns([4, 1])
+    
     with col1:
         st.write("")
         st.write("")
+        st.write("")
+        st.write("")
+        st.write("")
+        st.write("")
+        time_frame = select_time_frame()
+        filtered_data = filter_stock_data(stock_data, time_frame)
 
-        subcol1, subcol2, subcol3, subcol4 = st.columns([1, 1, 1, 1])
-        with subcol1:
-            st.markdown("**exchange**")
-            st.markdown(f"`{exchange_name}`")
-        with subcol2:  
-            st.markdown("**currency**")
-            st.markdown(f"`{currency}`")
-        with subcol3:
-            st.markdown("**stock type**")
-            st.markdown(f"`{instrument_type}`")
-        with subcol4:
-            st.markdown("**first trade**")
-            st.markdown(f"`{pd.to_datetime(first_trade_date).date()}`")
     with col2:
-        st.markdown(f"""
-                    <h1 style='text-align: right; font-size: 60px;'>{symbol}</h1>
-                    """, unsafe_allow_html=True)
-        st.markdown(f"""
-                <p style='text-align: right; font-size: 18px;'>{long_name}</p>
-                """, unsafe_allow_html=True)
-
-
-def stock_chart_section(stock_data):
-    st.write("---")
-    # st.write("")
-    col1, col2 = st.columns([1, 1])
-    with col1:
-        st.markdown("**current price (last close)**")
-        st.markdown(f"""
-                    <h1 style='font-size: 60px;'>${stock_data['close_price'].values[-1]:,.2f}</h1>
-                    """, unsafe_allow_html=True) 
-        st.markdown(f"""
-                    <p style='font-size: 18px;'>as of {stock_data['date'].values[-1]}</p>
-                    """, unsafe_allow_html=True)       
-    with col2:
-        # yearly_high = stock_data[stock_data['date'] >= (pd.Timestamp.now().date() - pd.Timedelta('365 days'))]['close_price'].max()
-        # yearly_low = stock_data[stock_data['date'] >= (pd.Timestamp.now().date() - pd.Timedelta('365 days'))]['close_price'].min()
-        # volume = stock_data['volume'].values[-1]
-        yearly_high, yearly_low, volume = 0, 0, 0
-        subcol1, subcol2, subcol3 = st.columns([1, 1, 1])
-        with subcol1:
-            # 52-week high
-            st.markdown("<p style='text-align: right;'><strong>52-week high</strong></p>", unsafe_allow_html=True)
-            st.markdown(f"""
-                <p style='text-align: right;'><strong>${yearly_high:,.2f}</strong></p>
-                """, unsafe_allow_html=True)
-        with subcol2:
-            # 52-week low
-            st.markdown("<p style='text-align: right;'><strong>52-week low</strong></p>", unsafe_allow_html=True)
-            st.markdown(f"""
-                <p style='text-align: right;'><strong>${yearly_low:,.2f}</strong></p>
-                """, unsafe_allow_html=True)
-        with subcol3:
-            # volume
-            st.markdown("<p style='text-align: right;'><strong>volume</strong></p>", unsafe_allow_html=True)
-            st.markdown(f"""
-                <p style='text-align: right;'><strong>{volume:,.0f}<strong></p>
-                """, unsafe_allow_html=True)
-
-
-    # plot the chart        
-    stock_chart(stock_data)
-
-
-
-def stock_chart(stock_data):
-    time_frame = st.radio('',
-                        ['1 week', '1 month', '1 year', '5 years', 'max'], 
-                        index=0,
-                        horizontal=True)
-    time_period = to_time_period(time_frame)
-    # Convert the time_period string into a proper Timedelta
-    time_delta = pd.Timedelta(time_period)
+        display_price_info(filtered_data, stock_metadata)
     
-    # Filter the data based on the time_period
-    # start_date = pd.Timestamp.now().date() - time_delta
-    # filtered_data = stock_data[stock_data['date'] >= start_date]
-    filtered_data = stock_data.copy()
+    plot_stock_chart(filtered_data)
+
+
+def select_time_frame():
+    """
+    UI component for selecting the time frame of the stock chart
+    """
+    time_frame = st.radio('Time frame:', ['1w', '1m', '6m', '1y', '5y', 'max'], index=0, horizontal=True)
+    return to_time_period(time_frame)
+
+
+def filter_stock_data(stock_data, time_frame):
+    """
+    filter the stock data based on the selected time period
+    """
+    time_delta = pd.Timedelta(time_frame)
+    start_date = pd.Timestamp.now().date() - time_delta
+    return stock_data[stock_data['date'] >= start_date].sort_values('date', ascending=False)
+
+
+def display_price_info(filtered_data, stock_metadata):
+    """
+    display the current price, price difference, and percentage change
+    """
+    start_price = filtered_data['close_price'].iloc[-1]
+    current_price = stock_metadata['regular_market_price'][0]
+    price_diff = current_price - start_price
+    price_diff_percent = (price_diff / start_price) * 100
+
+    st.markdown(f"<h1 style='font-size: 48px;'>${current_price:,.2f}</h1>", unsafe_allow_html=True)
+
+    sign = "+" if price_diff > 0 else "-"
+    price_diff_text = f"{sign}${abs(price_diff):,.2f} ({sign}{abs(price_diff_percent):,.2f}%)"
+    color = "green" if price_diff > 0 else "red"
     
-    # Ensure the data is sorted by date
-    filtered_data = filtered_data.sort_values(by='date')
-    
-    # Plot the data
+    st.markdown(f"<p style='font-size: 18px; color: {color};'>{price_diff_text}</p>", unsafe_allow_html=True)
+
+    last_updated = pd.to_datetime(stock_metadata['last_updated'][0])
+    st.markdown(f"as of {last_updated.strftime('%b %d, %Y %I:%M%p')}")
+
+
+def plot_stock_chart(filtered_data):
+    """
+    plot the stock chart using Plotly
+    """
     fig = px.line(filtered_data, x="date", y="close_price")
-    fig.update_traces(line=dict(width=4))  # Set desired width (e.g., 4)
+    fig.update_traces(line=dict(width=4))
+    fig.update_layout(
+        xaxis_title="Date",
+        yaxis_title="Close Price",
+        xaxis_tickformat='%b %d, %Y',
+        xaxis_showgrid=False
+    )
     st.plotly_chart(fig)
 
 
 def to_time_period(time_frame):
     """
-    converts the time_frame string into a proper time_period string for pandas Timedelta
+    converts time_frame string into a pandas Timedelta compatible string
     """
-    if time_frame == '1 week':
-        return '7 days'
-    elif time_frame == '1 month':
-        return '30 days'
-    elif time_frame == '1 year':
-        return '365 days'
-    elif time_frame == '5 years':
-        return '1825 days'
-    else:
-        return '45545 days'
+    periods = {
+        '1w': '7 days',
+        '1m': '30 days',
+        '6m': '183 days',
+        '1y': '365 days',
+        '5y': '1825 days',
+        'max': '45545 days'
+    }
+    return periods.get(time_frame, '365 days')
+

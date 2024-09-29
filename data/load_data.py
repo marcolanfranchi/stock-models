@@ -5,6 +5,29 @@ from dotenv import load_dotenv
 import datetime as dt
 import pandas as pd
 
+
+def connect_to_db():
+    """
+    Connect to the PostgreSQL database
+    """
+    # get database connection details from environment variables
+    load_dotenv()
+    DB_NAME = os.getenv('DB_NAME')
+    DB_USER = os.getenv('DB_USER')
+    DB_PASSWORD = os.getenv('DB_PASSWORD')
+    DB_HOST = os.getenv('DB_HOST', 'localhost')
+    DB_PORT = os.getenv('DB_PORT', '5432')
+
+    # return the connection to PostgreSQL
+    return psycopg2.connect(
+        dbname=DB_NAME,
+        user=DB_USER,
+        password=DB_PASSWORD,
+        host=DB_HOST,
+        port=DB_PORT
+    )
+
+
 def insert_stock_data(ticker_symbol, hist_data, cursor):
     """
     inserts stock data into the stocks table
@@ -23,15 +46,18 @@ def insert_stock_data(ticker_symbol, hist_data, cursor):
             float(row['Open']), float(row['Close']), float(row['High']),
             float(row['Low']), float(row['Volume'])))
 
-# Function to insert stock metadata into the lu_stock table
+
 def insert_stock_metadata(ticker_symbol, metadata, cursor):
+    """
+    inserts stock metadata into the lu_stock table
+    """
     cursor.execute("""
-        INSERT INTO lu_stock (symbol, currency, exchange_name, full_exchange_name, instrument_type, 
+        INSERT INTO lu_stock (ticker, currency, exchange_name, full_exchange_name, instrument_type, 
                               first_trade_date, regular_market_price, fifty_two_week_high, fifty_two_week_low, 
                               regular_market_day_high, regular_market_day_low, regular_market_volume, 
                               long_name, short_name, chart_previous_close, timezone, exchange_timezone_name)
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-        ON CONFLICT (symbol) DO UPDATE SET 
+        ON CONFLICT (ticker) DO UPDATE SET 
             currency = EXCLUDED.currency,
             exchange_name = EXCLUDED.exchange_name,
             full_exchange_name = EXCLUDED.full_exchange_name,
@@ -56,52 +82,51 @@ def insert_stock_metadata(ticker_symbol, metadata, cursor):
           metadata.get('regularMarketDayHigh'), metadata.get('regularMarketDayLow'), metadata.get('regularMarketVolume'),
           metadata.get('longName'), metadata.get('shortName'), metadata.get('chartPreviousClose'),
           metadata.get('timezone'), metadata.get('exchangeTimezoneName')))
-    
+
+
+def insert_stock_news(ticker_symbol, news, cursor): # implement this function
+    """
+    inserts stock news into the stock_news table
+    """
+    for article in news:
+        cursor.execute("""
+            INSERT INTO stock_news (ticker, title, summary, url, source, date)
+            VALUES (%s, %s, %s, %s, %s, %s)
+            ON CONFLICT (ticker, title) DO NOTHING
+        """, (ticker_symbol, article['title'], article['summary'], article['url'], article['source'], article['date']))
+
+
 def main():
-
-    # load environment variables
-    load_dotenv()
-
-    # get database connection details from environment variables
-    DB_NAME = os.getenv('DB_NAME')
-    DB_USER = os.getenv('DB_USER')
-    DB_PASSWORD = os.getenv('DB_PASSWORD')
-    DB_HOST = os.getenv('DB_HOST', 'localhost')
-    DB_PORT = os.getenv('DB_PORT', '5432')
-
-    # connect to PostgreSQL
-    conn = psycopg2.connect(
-        dbname=DB_NAME,
-        user=DB_USER,
-        password=DB_PASSWORD,
-        host=DB_HOST,
-        port=DB_PORT
-    )
+    # connect to the database
+    conn = connect_to_db()
     conn.autocommit = True
     cursor = conn.cursor()
 
-    stocks = pd.read_csv('data/stocks.csv')['symbol'].tolist()
+    # access the list of stocks
+    stocks = pd.read_csv('data/stocks.csv')['ticker'].tolist()
+
+    # fetch data for each stock
     for ticker_symbol in stocks:
-        print(f"Fetching data for {ticker_symbol}...")
+        print(f"----- fetching data for {ticker_symbol} ... -----")
         stock = yf.Ticker(ticker_symbol)
-        # Fetch historical market data
+        # fetch historical market data
         hist = stock.history(period="max")
         hist.index = hist.index.tz_convert('UTC')
 
-        # Fetch stock metadata
+        # fetch stock metadata
         metadata = stock.history_metadata
 
-        # Insert stock data
+        # insert stock data
         insert_stock_data(ticker_symbol, hist, cursor)
-        print("Stock Data inserted successfully.")
+        print("📈 stock Data inserted successfully.")
 
-        # Insert stock metadata into lu_stock table
+        # insert stock metadata into lu_stock table
         if metadata:
             insert_stock_metadata(ticker_symbol, metadata, cursor)
         
-        print(f"Metadata for {ticker_symbol} inserted successfully.")
+        print(f"ℹ️ metadata inserted successfully.")
+        print(f"✅ all data for {ticker_symbol} fetched successfully.")
      
-
     # Close the connection
     cursor.close()
     conn.close()
