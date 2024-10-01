@@ -61,21 +61,27 @@ def display_daily_stats(stock_metadata):
     display current price, daily low, and daily high
     """
     current_price = stock_metadata['regular_market_price'][0]
+    last_open = stock_metadata['chart_previous_close'][0]
     daily_low = stock_metadata['regular_market_day_low'][0]
     daily_high = stock_metadata['regular_market_day_high'][0]
-    subcol1, subcol2, subcol3, subcol4 = st.columns([1, 1, 1, 4])
+    subcol1, subcol2, subcol3, subcol4, subcol5 = st.columns([1, 1, 1, 1, 4])
     with subcol1:
         st.markdown("*current price*")
         st.markdown(f'<span style="font-size:18px;">`${current_price:,.2f}`</span>', unsafe_allow_html=True)
-
+    
     with subcol2:
+        st.markdown("*last open*")
+        st.markdown(f'<span style="font-size:18px;">`${last_open:,.2f}`</span>', unsafe_allow_html=True)
+
+    with subcol3:
         st.markdown("*daily high*")
         st.markdown(f'<span style="font-size:18px;">`${daily_high:,.2f}`</span>', unsafe_allow_html=True)
     
-    with subcol3:  
+    with subcol4:  
         st.markdown("*daily low*")
         st.markdown(f'<span style="font-size:18px;">`${daily_low:,.2f}`</span>', unsafe_allow_html=True)
-    with subcol4:
+    
+    with subcol5:
         pass
 
 def display_52_week_stats(stock_data):
@@ -137,7 +143,7 @@ def display_price_info(filtered_data, stock_metadata):
     """
     display the current price, price difference, and percentage change
     """
-    start_price = filtered_data['close_price'].iloc[-1]
+    start_price = filtered_data['open_price'].iloc[-1]
     current_price = stock_metadata['regular_market_price'][0]
     price_diff = current_price - start_price
     price_diff_percent = (price_diff / start_price) * 100
@@ -159,12 +165,13 @@ def plot_stock_chart(filtered_data):
     plot the stock chart using Plotly
     """
     fig = px.line(filtered_data, x="date", y="close_price")
-    fig.update_traces(line=dict(width=4))
+    fig.update_traces(line=dict(width=6))
     fig.update_layout(
         xaxis_title="Date",
         yaxis_title="Close Price",
         xaxis_tickformat='%b %d, %Y',
-        xaxis_showgrid=False
+        xaxis_showgrid=False,
+        hoverlabel=dict(font_size=18, bordercolor="white"),
     )
     st.plotly_chart(fig)
 

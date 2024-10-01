@@ -1,31 +1,7 @@
-import os
-import psycopg2
 import yfinance as yf
-from dotenv import load_dotenv
 import datetime as dt
 import pandas as pd
-
-
-def connect_to_db():
-    """
-    Connect to the PostgreSQL database
-    """
-    # get database connection details from environment variables
-    load_dotenv()
-    DB_NAME = os.getenv('DB_NAME')
-    DB_USER = os.getenv('DB_USER')
-    DB_PASSWORD = os.getenv('DB_PASSWORD')
-    DB_HOST = os.getenv('DB_HOST', 'localhost')
-    DB_PORT = os.getenv('DB_PORT', '5432')
-
-    # return the connection to PostgreSQL
-    return psycopg2.connect(
-        dbname=DB_NAME,
-        user=DB_USER,
-        password=DB_PASSWORD,
-        host=DB_HOST,
-        port=DB_PORT
-    )
+from data.create_db import connect_to_db
 
 
 def insert_stock_data(ticker_symbol, hist_data, cursor):
@@ -55,8 +31,8 @@ def insert_stock_metadata(ticker_symbol, metadata, cursor):
         INSERT INTO lu_stock (ticker, currency, exchange_name, full_exchange_name, instrument_type, 
                               first_trade_date, regular_market_price, fifty_two_week_high, fifty_two_week_low, 
                               regular_market_day_high, regular_market_day_low, regular_market_volume, 
-                              long_name, short_name, chart_previous_close, timezone, exchange_timezone_name)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                              long_name, short_name, chart_previous_close, timezone, exchange_timezone_name, last_updated)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         ON CONFLICT (ticker) DO UPDATE SET 
             currency = EXCLUDED.currency,
             exchange_name = EXCLUDED.exchange_name,
@@ -73,7 +49,8 @@ def insert_stock_metadata(ticker_symbol, metadata, cursor):
             short_name = EXCLUDED.short_name,
             chart_previous_close = EXCLUDED.chart_previous_close,
             timezone = EXCLUDED.timezone,
-            exchange_timezone_name = EXCLUDED.exchange_timezone_name
+            exchange_timezone_name = EXCLUDED.exchange_timezone_name,
+            last_updated = EXCLUDED.last_updated
     """, 
     (ticker_symbol, metadata.get('currency'), metadata.get('exchangeName'), metadata.get('fullExchangeName'),
           metadata.get('instrumentType'), 
@@ -81,20 +58,36 @@ def insert_stock_metadata(ticker_symbol, metadata, cursor):
           metadata.get('regularMarketPrice'), metadata.get('fiftyTwoWeekHigh'), metadata.get('fiftyTwoWeekLow'),
           metadata.get('regularMarketDayHigh'), metadata.get('regularMarketDayLow'), metadata.get('regularMarketVolume'),
           metadata.get('longName'), metadata.get('shortName'), metadata.get('chartPreviousClose'),
-          metadata.get('timezone'), metadata.get('exchangeTimezoneName')))
+          metadata.get('timezone'), metadata.get('exchangeTimezoneName'), dt.datetime.now()))
 
 
-def insert_stock_news(ticker_symbol, news, cursor): # implement this function
+
+
+def insert_stock_news(ticker_symbol, news_data, cursor):
     """
     inserts stock news into the stock_news table
     """
-    for article in news:
-        cursor.execute("""
-            INSERT INTO stock_news (ticker, title, summary, url, source, date)
-            VALUES (%s, %s, %s, %s, %s, %s)
-            ON CONFLICT (ticker, title) DO NOTHING
-        """, (ticker_symbol, article['title'], article['summary'], article['url'], article['source'], article['date']))
+    # filter news data to only those that have ticker_symbol in relatedTickers
+    news_data = [article for article in news_data if ticker_symbol in article.get('relatedTickers', [])]
 
+    for article in news_data:
+        # extract the first thumbnail, if available
+        thumbnail_info = article.get('thumbnail', {}).get('resolutions', [{}])[0]
+        thumbnail_url = thumbnail_info.get('url', None)
+        thumbnail_width = thumbnail_info.get('width', None)
+        thumbnail_height = thumbnail_info.get('height', None)
+
+        # convert providerPublishTime UNIX timestamp to timestamp
+        provider_publish_time = dt.datetime.utcfromtimestamp(article['providerPublishTime']).strftime('%Y-%m-%d %H:%M:%S')
+
+        cursor.execute("""
+            INSERT INTO stock_news (ticker, date, uuid, title, publisher, link, provider_publish_time, type, thumbnail_url, thumbnail_width, thumbnail_height)
+            VALUES (%s, CURRENT_TIMESTAMP, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            ON CONFLICT (uuid) DO NOTHING
+        """, (
+            ticker_symbol, article['uuid'], article['title'], article['publisher'], article['link'],
+            provider_publish_time, article['type'], thumbnail_url, thumbnail_width, thumbnail_height
+        ))
 
 def main():
     # connect to the database
@@ -116,6 +109,9 @@ def main():
         # fetch stock metadata
         metadata = stock.history_metadata
 
+        # fetch stock news data
+        news = stock.news  # This returns a list of news articles
+
         # insert stock data
         insert_stock_data(ticker_symbol, hist, cursor)
         print("📈 stock Data inserted successfully.")
@@ -123,11 +119,16 @@ def main():
         # insert stock metadata into lu_stock table
         if metadata:
             insert_stock_metadata(ticker_symbol, metadata, cursor)
+            print("ℹ️ metadata inserted successfully.")
+
+        # insert stock news data into stock_news table
+        if news:
+            insert_stock_news(ticker_symbol, news, cursor)
+            print("📰 news data inserted successfully.")
         
-        print(f"ℹ️ metadata inserted successfully.")
         print(f"✅ all data for {ticker_symbol} fetched successfully.")
      
-    # Close the connection
+    # close the connection
     cursor.close()
     conn.close()
 

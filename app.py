@@ -3,7 +3,7 @@ import pandas as pd
 import plotly.figure_factory as ff
 from ui.components import stock_header_with_info, stock_chart
 from data.load_data import main as refresh_database
-from data.load_data import connect_to_db
+from data.create_db import connect_to_db
 import time
 
 # page configurations
@@ -27,7 +27,8 @@ with st.sidebar:
             time.sleep(3) # wait for 3 seconds
             text_placeholder.empty() # clear the text
     st.write("")
-    st.write("a simple web app to display different models that i've built for a small collection of stocks of my interest.") 
+    st.write("a simple web app to display different models that i've built for a small collection of stocks of my interest.")
+    st.write("🚧 models are currently under development 🚧") 
     st.write("---")
 
 # retreiving the stock data

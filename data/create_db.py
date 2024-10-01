@@ -3,15 +3,26 @@ import psycopg2
 from psycopg2 import sql
 from dotenv import load_dotenv
 
-# load environment variables from .env file
-load_dotenv()
+def connect_to_db():
+    """
+    Connect to the PostgreSQL database
+    """
+    # get database connection details from environment variables
+    load_dotenv()
+    DB_NAME = os.getenv('DB_NAME')
+    DB_USER = os.getenv('DB_USER')
+    DB_PASSWORD = os.getenv('DB_PASSWORD')
+    DB_HOST = os.getenv('DB_HOST', 'localhost')
+    DB_PORT = os.getenv('DB_PORT', '5432')
 
-# get database connection details from environment variables
-DB_NAME = os.getenv('DB_NAME')
-DB_USER = os.getenv('DB_USER')
-DB_PASSWORD = os.getenv('DB_PASSWORD')
-DB_HOST = os.getenv('DB_HOST', 'localhost')
-DB_PORT = os.getenv('DB_PORT', '5432')
+    # return the connection to PostgreSQL
+    return psycopg2.connect(
+        dbname=DB_NAME,
+        user=DB_USER,
+        password=DB_PASSWORD,
+        host=DB_HOST,
+        port=DB_PORT
+    )
 
 # create table queries
 CREATE_TABLE_QUERIES = [
@@ -54,31 +65,32 @@ CREATE_TABLE_QUERIES = [
         last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
     """
-#     , 
+    , 
 
-#     # create the stock news table
-#     """
-#     CREATE TABLE IF NOT EXISTS stock_news (
-#         id SERIAL PRIMARY KEY,
-#         ticker VARCHAR(10) NOT NULL,
-#         model_name VARCHAR(50) NOT NULL,
-#         model_description TEXT,
-#         model_file BYTEA,
-#         last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-# );
-# """
+    # create the stock news table
+    """
+    CREATE TABLE IF NOT EXISTS stock_news (
+        id SERIAL PRIMARY KEY,
+        ticker VARCHAR(10) NOT NULL,           
+        date TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        uuid VARCHAR(255) NOT NULL UNIQUE,
+        title VARCHAR(255) NOT NULL,
+        publisher VARCHAR(255),
+        link TEXT,
+        provider_publish_time TIMESTAMPTZ,
+        type VARCHAR(50),
+        thumbnail_url TEXT,
+        thumbnail_width INT,
+        thumbnail_height INT,
+        UNIQUE (ticker, uuid)
+    );
+    """
 ]
 
 def create_database():
     try:
-        # Connect to the PostgreSQL server
-        conn = psycopg2.connect(
-            dbname=DB_NAME,
-            user=DB_USER,
-            password=DB_PASSWORD,
-            host=DB_HOST,
-            port=DB_PORT
-        )
+        # connect to the PostgreSQL server
+        conn = connect_to_db()
         conn.autocommit = True
         cursor = conn.cursor()
 
