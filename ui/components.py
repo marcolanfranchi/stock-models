@@ -2,6 +2,24 @@ import streamlit as st
 import plotly.express as px
 import pandas as pd
 
+def stock_news_list(stock_news):
+    """
+    display a list of stock news articles
+    """
+    for i in range(min(25, len(stock_news))):
+        col1, col2 = st.columns([2, 1])
+        with col1:
+            article = stock_news.iloc[i]
+            publish_time = pd.to_datetime(article['provider_publish_time'])
+            formatted_time = publish_time.strftime('%b %d, %Y')
+            st.markdown(f"### [{article['title']}]({article['link']})")
+            st.markdown(f"{formatted_time}")
+            st.markdown(f"{article['type'].lower()} by *{article['publisher']}*")
+        with col2:
+            if article['thumbnail_url']:
+                st.markdown(f'<img src="{article["thumbnail_url"]}" alt="{article["title"]}" style="width:300px;">', unsafe_allow_html=True)
+        st.write("---")
+
 def stock_header_with_info(stock_metadata, stock_data):
     """
     UI component to display basic stock information (name and current price)
@@ -40,18 +58,18 @@ def display_general_info(stock_metadata):
     instrument_type = stock_metadata['instrument_type'].values[0]
     # first_trade_date = stock_metadata['first_trade_date'].values[0]
     volume = stock_metadata['regular_market_volume'].values[0]
-    subcol1, subcol2, subcol3, subcol4, subcol5 = st.columns([1, 1, 1, 1, 4])
+    subcol1, subcol2, subcol3, subcol4, subcol5 = st.columns([1, 1, 1, 1, 3])
     with subcol1:
-        st.markdown("*exchange*")
+        st.markdown("*exchange:*")
         st.markdown(f'<span style="font-size:18px;">`{exchange_name}`</span>', unsafe_allow_html=True)
     with subcol2:  
-        st.markdown("*currency*")
+        st.markdown("*currency:*")
         st.markdown(f'<span style="font-size:18px;">`{currency}`</span>', unsafe_allow_html=True)
     with subcol3:
-        st.markdown("*stock type*")
+        st.markdown("*stock type:*")
         st.markdown(f'<span style="font-size:18px;">`{instrument_type}`</span>', unsafe_allow_html=True)
     with subcol4:
-        st.markdown("*volume*")
+        st.markdown("*volume:*")
         st.markdown(f'<span style="font-size:18px;">`{volume:,.0f}`</span>', unsafe_allow_html=True)
     with subcol5:
         pass
@@ -64,21 +82,21 @@ def display_daily_stats(stock_metadata):
     last_open = stock_metadata['chart_previous_close'][0]
     daily_low = stock_metadata['regular_market_day_low'][0]
     daily_high = stock_metadata['regular_market_day_high'][0]
-    subcol1, subcol2, subcol3, subcol4, subcol5 = st.columns([1, 1, 1, 1, 4])
+    subcol1, subcol2, subcol3, subcol4, subcol5 = st.columns([1, 1, 1, 1, 3])
     with subcol1:
-        st.markdown("*current price*")
+        st.markdown("*current price:*")
         st.markdown(f'<span style="font-size:18px;">`${current_price:,.2f}`</span>', unsafe_allow_html=True)
     
     with subcol2:
-        st.markdown("*last open*")
+        st.markdown("*last open:*")
         st.markdown(f'<span style="font-size:18px;">`${last_open:,.2f}`</span>', unsafe_allow_html=True)
 
     with subcol3:
-        st.markdown("*daily high*")
+        st.markdown("*daily high:*")
         st.markdown(f'<span style="font-size:18px;">`${daily_high:,.2f}`</span>', unsafe_allow_html=True)
     
     with subcol4:  
-        st.markdown("*daily low*")
+        st.markdown("*daily low:*")
         st.markdown(f'<span style="font-size:18px;">`${daily_low:,.2f}`</span>', unsafe_allow_html=True)
     
     with subcol5:
@@ -91,12 +109,12 @@ def display_52_week_stats(stock_data):
     year_data = filter_stock_data(stock_data, '365 days')
     high_52_week = year_data['close_price'].max()
     low_52_week = year_data['close_price'].min()
-    subcol1, subcol2, subcol3 = st.columns([1, 1, 6])
+    subcol1, subcol2, subcol3 = st.columns([1, 1, 4])
     with subcol1:
-        st.markdown("*52-week high*")
+        st.markdown("*52-week high:*")
         st.markdown(f'<span style="font-size:18px;">`${high_52_week:,.2f}`</span>', unsafe_allow_html=True)
     with subcol2:
-        st.markdown("*52-week low*")
+        st.markdown("*52-week low:*")
         st.markdown(f'<span style="font-size:18px;">`${low_52_week:,.2f}`</span>', unsafe_allow_html=True)
 
 
@@ -126,7 +144,7 @@ def select_time_frame():
     """
     UI component for selecting the time frame of the stock chart
     """
-    time_frame = st.radio('Time frame:', ['1w', '1m', '6m', '1y', '5y', 'max'], index=0, horizontal=True)
+    time_frame = st.radio('Time frame:', ['1w', '1m', '6m', '1y', '5y', 'max'], index=1, horizontal=True)
     return to_time_period(time_frame)
 
 

@@ -54,13 +54,11 @@ def insert_stock_metadata(ticker_symbol, metadata, cursor):
     """, 
     (ticker_symbol, metadata.get('currency'), metadata.get('exchangeName'), metadata.get('fullExchangeName'),
           metadata.get('instrumentType'), 
-          dt.datetime.fromtimestamp(metadata.get('firstTradeDate')),  # Convert from UNIX timestamp
+          dt.datetime.fromtimestamp(metadata.get('firstTradeDate')), # Convert from UNIX timestamp
           metadata.get('regularMarketPrice'), metadata.get('fiftyTwoWeekHigh'), metadata.get('fiftyTwoWeekLow'),
           metadata.get('regularMarketDayHigh'), metadata.get('regularMarketDayLow'), metadata.get('regularMarketVolume'),
           metadata.get('longName'), metadata.get('shortName'), metadata.get('chartPreviousClose'),
           metadata.get('timezone'), metadata.get('exchangeTimezoneName'), dt.datetime.now()))
-
-
 
 
 def insert_stock_news(ticker_symbol, news_data, cursor):
