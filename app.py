@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import datetime as dt
-import plotly.figure_factory as ff
 from ui.components import stock_header_with_info, stock_chart, stock_news_list
 from data.load_data import main as refresh_database
 from data.create_db import connect_to_db
@@ -13,6 +12,15 @@ st.set_page_config(
     page_icon="📈",
     layout="wide"
 )
+
+# remove streamlit's main menu and footer
+hide_default_format = """
+       <style>
+       #MainMenu {visibility: hidden; }
+       footer {visibility: hidden;}
+       </style>
+       """
+st.markdown(hide_default_format, unsafe_allow_html=True)
 
 # retreiving the stock data
 conn = connect_to_db()
@@ -28,30 +36,35 @@ with st.sidebar:
     with titleCol:
         st.title('stock-models')
     st.write("")
-    st.write("a simple web app to display different models that i've built for a small collection of stocks of my interest.")
+    st.write("")
+    st.write("a simple UI/database I built to display a collection of stocks of my interest. I am working on building models to predict stock prices to display here.")
     st.write("")
     st.write("🚧 models are currently under development 🚧") 
     st.write("---")
 
 # display the list of stocks in the sidebar
 with st.sidebar:
-    selected_stock = st.selectbox('select a stock', stocks, index=0)
+    col1, col2 = st.columns([1,2])
+    with col1:
+        selected_stock = st.selectbox('select a stock', stocks, index=0)
+    with col2:
+        pass
 
 # get the data for the selected stock
 stock_metadata = pd.read_sql(
-    f"SELECT * FROM public.lu_stock WHERE ticker = '{selected_stock}'",
+    f"SELECT * FROM public.lu_stock WHERE ticker = '{selected_stock}';",
     conn)
 stock_metadata['first_trade_date'] = pd.to_datetime(stock_metadata['first_trade_date']).dt.date
 
 # load the selected stocks data from the database
 stock_data = pd.read_sql(
-    f"SELECT * FROM public.stocks WHERE ticker = '{selected_stock}' order by date desc",
+    f"SELECT * FROM public.stocks WHERE ticker = '{selected_stock}' order by date desc;",
     conn)
 stock_data['date'] = pd.to_datetime(stock_data['date'], utc=True).dt.date
 
 # load the selected stocks news from the database
 stock_news = pd.read_sql(
-    f"SELECT * FROM public.stock_news WHERE ticker = '{selected_stock}' order by provider_publish_time desc",
+    f"SELECT * FROM public.stock_news WHERE ticker = '{selected_stock}' order by provider_publish_time desc;",
     conn)
 
 with st.sidebar:
@@ -71,8 +84,12 @@ with st.sidebar:
 with st.sidebar:
     if len(stock_news) > 0:
         st.write("---")
-        st.write(f'*relevant news:*')
-        st.write("---")
+        st.markdown(f'<u>*relevant news:*</u>', unsafe_allow_html=True)
+        st.write("")
+        st.write("")
+        st.write("")
+        st.write("")
+
         stock_news_list(stock_news)
 
 
