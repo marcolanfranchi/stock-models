@@ -37,7 +37,7 @@ with st.sidebar:
         st.title('stock-models')
     st.write("")
     st.write("")
-    st.write("a simple UI/database I built to display a collection of stocks of my interest. I am working on building models to predict stock prices to display here.")
+    st.write("a simple UI/database I built to display a collection of stocks of my interest. I am working on building models for different stocks to display here.")
     st.write("")
     st.write("🚧 models are currently under development 🚧") 
     st.write("---")

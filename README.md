@@ -1,7 +1,13 @@
 ## stock-models
 
-this repo will hold different ML models created for predicting prices of different stocks. 
-I also built a database and UI to visualize stocks and the models' performance against the actual stock data. 
+This repo will hold ML models I've created for predicting prices of different stocks. 
+I also built a database and UI to visualize stock data and model performance. 
+
+### technologies
+
+- **back-end:** Python, yfinance API, psycopg2, PostgreSQL, Vercel Hosting
+- **front-end:** Python, Streamlit, plotly
+<!-- - **data analysis/ML:** Python, Jupyter Notebook, scikit-learn -->
 
 ### hosted project
 [![stock-models](images/homepage.png)](https://stock-models.streamlit.app/)
