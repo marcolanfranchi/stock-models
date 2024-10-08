@@ -34,19 +34,23 @@ def add_stock_to_csv(stock):
         df = pd.DataFrame({'ticker': stocks + [stock]})
         df.to_csv(file_path, index=False)
         print(f"{stock} has been added to {file_path}. Once you refresh the data, you will be able to view the stock data.")
-    
-if __name__ == "__main__":
-    if sys.argv[1] == None:
-        print("Please enter a stock ticker.")
-        exit()
-    stock = sys.argv[1]
-    check_ticker(stock)
 
-    # ask the user if they want to add the stock to the CSV
-    user_input = input("Would you like to add this stock to data/stocks.csv? (Y/N): ").strip().upper()
-    if user_input == 'Y':
-        add_stock_to_csv(stock)
-    elif user_input == 'N':
-        exit()
-    else:
-        print("Invalid input. Stock not added.")
+def main(): 
+        if sys.argv[1] == None:
+            print("Please enter a stock ticker.")
+            exit()
+        stock = sys.argv[1]
+        check_ticker(stock)
+
+        # ask the user if they want to add the stock to the CSV
+        user_input = input("Would you like to add this stock to data/stocks.csv? (Y/N): ").strip().upper()
+        if user_input == 'Y':
+            add_stock_to_csv(stock)
+        elif user_input == 'N':
+            exit()
+        else:
+            print("Invalid input. Stock not added.")
+
+
+if __name__ == "__main__":
+    main()

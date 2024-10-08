@@ -1,11 +1,13 @@
 ## stock-models
 
-this repo will hold different ML models created for predicting prices of different stocks. I also plan to create a UI to visualize the models' performance against the actual stock data. 
+this repo will hold different ML models created for predicting prices of different stocks. 
+I also built a database and UI to visualize stocks and the models' performance against the actual stock data. 
 
 ### hosted project
-[here](https://github.com/marcolanfranchi/stock-models)
+[![stock-models](images/homepage.png)](https://stock-models.streamlit.app/)
 
-### setup
+
+<!-- ### setup
 
 clone the repo
 ```bash
@@ -35,4 +37,4 @@ run the ui
 ```bash
 streamlit run ui/app.py
 ```
-
+ -->
