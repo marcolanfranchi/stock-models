@@ -7,7 +7,7 @@ from data.create_db import connect_to_db
 import time
 
 # Cache the function that retrieves stock metadata
-@st.cache_data(ttl=600)  # cache for 10 minutes
+# @st.cache_data(ttl=600)  # cache for 10 minutes
 def load_stock_metadata(selected_stock):
     cursor = conn.cursor()
     stock_metadata = pd.read_sql(
@@ -17,7 +17,7 @@ def load_stock_metadata(selected_stock):
     return stock_metadata
 
 # Cache the function that retrieves stock data
-@st.cache_data(ttl=600)  # cache for 10 minutes
+# @st.cache_data(ttl=600)  # cache for 10 minutes
 def load_stock_data(selected_stock):
     cursor = conn.cursor()
     stock_data = pd.read_sql(
@@ -27,7 +27,7 @@ def load_stock_data(selected_stock):
     return stock_data
 
 # Cache the function that retrieves stock news
-@st.cache_data(ttl=600)  # cache for 10 minutes
+# @st.cache_data(ttl=600)  # cache for 10 minutes
 def load_stock_news(selected_stock):
     cursor = conn.cursor()
     stock_news = pd.read_sql(
@@ -78,23 +78,6 @@ with st.sidebar:
         selected_stock = st.selectbox('select a stock', stocks, index=0)
     with col2:
         pass
-
-# # get the data for the selected stock
-# stock_metadata = pd.read_sql(
-#     f"SELECT * FROM public.lu_stock WHERE ticker = '{selected_stock}';",
-#     conn)
-# stock_metadata['first_trade_date'] = pd.to_datetime(stock_metadata['first_trade_date']).dt.date
-
-# # load the selected stocks data from the database
-# stock_data = pd.read_sql(
-#     f"SELECT * FROM public.stocks WHERE ticker = '{selected_stock}' order by date desc;",
-#     conn)
-# stock_data['date'] = pd.to_datetime(stock_data['date'], utc=True).dt.date
-
-# # load the selected stocks news from the database
-# stock_news = pd.read_sql(
-#     f"SELECT * FROM public.stock_news WHERE ticker = '{selected_stock}' order by provider_publish_time desc;",
-#     conn)
 
 # Load the data for the selected stock
 stock_metadata = load_stock_metadata(selected_stock)

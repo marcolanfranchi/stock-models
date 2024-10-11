@@ -6,3 +6,5 @@ venv/
 __pycache__/
 
 ui/__pycache__/components.cpython-311.pyc
+
+temp.ipynb

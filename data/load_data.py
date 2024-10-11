@@ -116,7 +116,7 @@ def main():
         hist = stock.history(period='max')
         # filter data to only include new dates
         hist = hist[hist.index >= last_date]
-        hist.index = hist.index.tz_convert('UTC')
+        # hist.index = hist.index.tz_convert('UTC')
 
         if not hist.empty:
             # insert stock data
@@ -126,7 +126,7 @@ def main():
             print("⚠️ no new data to insert.")
 
         # fetch stock metadata
-        metadata = stock.history_metadata
+        metadata = stock.history_metadata # requires history() to be called first
 
         # insert stock metadata into lu_stock table
         if metadata:

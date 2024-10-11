@@ -60,17 +60,21 @@ def display_general_info(stock_metadata):
     volume = stock_metadata['regular_market_volume'].values[0]
     subcol1, subcol2, subcol3, subcol4, subcol5 = st.columns([1, 1, 1, 1, 3])
     with subcol1:
-        st.markdown("*exchange:*")
-        st.markdown(f'<span style="font-size:18px;">`{exchange_name}`</span>', unsafe_allow_html=True)
-    with subcol2:  
-        st.markdown("*currency:*")
-        st.markdown(f'<span style="font-size:18px;">`{currency}`</span>', unsafe_allow_html=True)
+        if exchange_name:
+            st.markdown("*exchange:*")
+            st.markdown(f'<span style="font-size:18px;">`{exchange_name}`</span>', unsafe_allow_html=True)
+    with subcol2: 
+        if currency: 
+            st.markdown("*currency:*")
+            st.markdown(f'<span style="font-size:18px;">`{currency}`</span>', unsafe_allow_html=True)
     with subcol3:
-        st.markdown("*stock type:*")
-        st.markdown(f'<span style="font-size:18px;">`{instrument_type}`</span>', unsafe_allow_html=True)
+        if instrument_type:
+            st.markdown("*stock type:*")
+            st.markdown(f'<span style="font-size:18px;">`{instrument_type}`</span>', unsafe_allow_html=True)
     with subcol4:
-        st.markdown("*volume:*")
-        st.markdown(f'<span style="font-size:18px;">`{volume:,.0f}`</span>', unsafe_allow_html=True)
+        if volume:
+            st.markdown("*volume:*")
+            st.markdown(f'<span style="font-size:18px;">`{volume:,.0f}`</span>', unsafe_allow_html=True)
     with subcol5:
         pass
 
@@ -122,7 +126,7 @@ def stock_chart(stock_data, stock_metadata):
     """
     display stock chart and price difference information
     """
-    col1, col2 = st.columns([4, 1])
+    col1, col2 = st.columns([3, 1])
     
     with col1:
         st.write("")
