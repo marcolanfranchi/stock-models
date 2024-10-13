@@ -89,7 +89,8 @@ with st.sidebar:
             st.write("")
             if st.button('refresh data'):
                 text_placeholder = st.empty() # placeholder for the text
-                if stock_metadata['last_updated'][0] >= (dt.datetime.now() - dt.timedelta(minutes=15)):
+                # if stock_metadata['last_updated'][0] >= (dt.datetime.now() - dt.timedelta(minutes=15)):
+                if 0 == 1:
                     text_placeholder.write("data can only be refreshed once every 15 minutes.")
                 else:
                     refresh_database()

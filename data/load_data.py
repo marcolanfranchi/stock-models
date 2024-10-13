@@ -15,16 +15,18 @@ def get_last_ingested_date(ticker_symbol, cursor):
     result = cursor.fetchone()
     return result[0] if result[0] else dt.datetime(1970, 1, 1)
 
+
 def insert_stock_data(ticker_symbol, hist_data, cursor):
     """
     inserts stock data into the stocks table for new dates only
     """
     for date, row in hist_data.iterrows():
-        cursor.execute("""
+        cursor.execute(
+            """
             INSERT INTO stocks (ticker, date, open_price, close_price, high_price, low_price, volume)
             VALUES (%s, %s, %s, %s, %s, %s, %s)
             ON CONFLICT (ticker, date) DO NOTHING
-        """, (ticker_symbol, date.date(),  
+            """, (ticker_symbol, date.date(),
             float(row['Open']), float(row['Close']), float(row['High']),
             float(row['Low']), float(row['Volume'])))
 
@@ -39,7 +41,7 @@ def insert_stock_metadata(ticker_symbol, metadata, cursor):
                               regular_market_day_high, regular_market_day_low, regular_market_volume, 
                               long_name, short_name, chart_previous_close, timezone, exchange_timezone_name, last_updated)
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-        ON CONFLICT (ticker) DO UPDATE SET 
+        ON CONFLICT (ticker) DO UPDATE SET
             currency = EXCLUDED.currency,
             exchange_name = EXCLUDED.exchange_name,
             full_exchange_name = EXCLUDED.full_exchange_name,
@@ -73,7 +75,6 @@ def insert_stock_news(ticker_symbol, news_data, cursor):
     """
     # filter news data to only those that have ticker_symbol in relatedTickers
     news_data = [article for article in news_data if ticker_symbol in article.get('relatedTickers', [])]
-
     for article in news_data:
         # extract the first thumbnail, if available
         thumbnail_info = article.get('thumbnail', {}).get('resolutions', [{}])[0]
@@ -115,8 +116,8 @@ def main():
         # fetch historical market data
         hist = stock.history(period='max')
         # filter data to only include new dates
-        hist = hist[hist.index >= last_date]
-        # hist.index = hist.index.tz_convert('UTC')
+        # hist = hist[hist.index >= last_date]
+        hist.index = hist.index.tz_convert('UTC')
 
         if not hist.empty:
             # insert stock data

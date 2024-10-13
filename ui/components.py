@@ -88,20 +88,24 @@ def display_daily_stats(stock_metadata):
     daily_high = stock_metadata['regular_market_day_high'][0]
     subcol1, subcol2, subcol3, subcol4, subcol5 = st.columns([1, 1, 1, 1, 3])
     with subcol1:
-        st.markdown("*current price:*")
-        st.markdown(f'<span style="font-size:18px;">`${current_price:,.2f}`</span>', unsafe_allow_html=True)
+        if current_price:
+            st.markdown("*current price:*")
+            st.markdown(f'<span style="font-size:18px;">`${current_price:,.2f}`</span>', unsafe_allow_html=True)
     
     with subcol2:
-        st.markdown("*last open:*")
-        st.markdown(f'<span style="font-size:18px;">`${last_open:,.2f}`</span>', unsafe_allow_html=True)
+        if last_open:
+            st.markdown("*last open:*")
+            st.markdown(f'<span style="font-size:18px;">`${last_open:,.2f}`</span>', unsafe_allow_html=True)
 
     with subcol3:
-        st.markdown("*daily high:*")
-        st.markdown(f'<span style="font-size:18px;">`${daily_high:,.2f}`</span>', unsafe_allow_html=True)
-    
-    with subcol4:  
-        st.markdown("*daily low:*")
-        st.markdown(f'<span style="font-size:18px;">`${daily_low:,.2f}`</span>', unsafe_allow_html=True)
+        if daily_high:
+            st.markdown("*daily high:*")
+            st.markdown(f'<span style="font-size:18px;">`${daily_high:,.2f}`</span>', unsafe_allow_html=True)
+        
+    with subcol4:
+        if daily_low:   
+            st.markdown("*daily low:*")
+            st.markdown(f'<span style="font-size:18px;">`${daily_low:,.2f}`</span>', unsafe_allow_html=True)
     
     with subcol5:
         pass
@@ -115,11 +119,13 @@ def display_52_week_stats(stock_data):
     low_52_week = year_data['close_price'].min()
     subcol1, subcol2, subcol3 = st.columns([1, 1, 4])
     with subcol1:
-        st.markdown("*52-week high:*")
-        st.markdown(f'<span style="font-size:18px;">`${high_52_week:,.2f}`</span>', unsafe_allow_html=True)
+        if high_52_week:
+            st.markdown("*52-week high:*")
+            st.markdown(f'<span style="font-size:18px;">`${high_52_week:,.2f}`</span>', unsafe_allow_html=True)
     with subcol2:
-        st.markdown("*52-week low:*")
-        st.markdown(f'<span style="font-size:18px;">`${low_52_week:,.2f}`</span>', unsafe_allow_html=True)
+        if low_52_week:
+            st.markdown("*52-week low:*")
+            st.markdown(f'<span style="font-size:18px;">`${low_52_week:,.2f}`</span>', unsafe_allow_html=True)
 
 
 def stock_chart(stock_data, stock_metadata):
