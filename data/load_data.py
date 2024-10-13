@@ -116,7 +116,7 @@ def main():
         # fetch historical market data
         hist = stock.history(period='max')
         # filter data to only include new dates
-        # hist = hist[hist.index >= last_date]
+        hist = hist[hist.index >= last_date]
         hist.index = hist.index.tz_convert('UTC')
 
         if not hist.empty:
