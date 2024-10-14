@@ -1,9 +1,10 @@
 import streamlit as st
 import pandas as pd
-import datetime as dt
+from datetime import datetime, timedelta
 from ui.components import stock_header_with_info, stock_chart, stock_news_list
 from data.load_data import main as refresh_database, connect_to_db
 import time
+import pytz
 
 # Cache the function that retrieves stock metadata
 # @st.cache_data(ttl=600)  # cache for 10 minutes
@@ -88,8 +89,10 @@ with st.sidebar:
             st.write("")
             if st.button('refresh data'):
                 text_placeholder = st.empty() # placeholder for the text
-                pacific_now = dt.datetime.now(dt.timezone.utc).astimezone(dt.timezone(dt.timedelta(hours=-8)))
-                if stock_metadata['last_updated'][0] >= (pacific_now - dt.timedelta(minutes=15)):
+                current_time = datetime.now(pytz.timezone('US/Pacific'))
+                last_updated = pd.to_datetime(stock_metadata['last_updated'][0]).tz_localize('US/Pacific')
+                if last_updated >= (current_time - timedelta(minutes=15)):
+                # if False:
                     text_placeholder.write("data can only be refreshed once every 15 minutes.")
                 else:
                     refresh_database()
