@@ -2,8 +2,7 @@ import streamlit as st
 import pandas as pd
 import datetime as dt
 from ui.components import stock_header_with_info, stock_chart, stock_news_list
-from data.load_data import main as refresh_database
-from data.create_db import connect_to_db
+from data.load_data import main as refresh_database, connect_to_db
 import time
 
 # Cache the function that retrieves stock metadata
@@ -89,8 +88,7 @@ with st.sidebar:
             st.write("")
             if st.button('refresh data'):
                 text_placeholder = st.empty() # placeholder for the text
-                # if stock_metadata['last_updated'][0] >= (dt.datetime.now() - dt.timedelta(minutes=15)):
-                if 0 == 1:
+                if stock_metadata['last_updated'][0] >= (dt.datetime.now() - dt.timedelta(minutes=15)):
                     text_placeholder.write("data can only be refreshed once every 15 minutes.")
                 else:
                     refresh_database()
