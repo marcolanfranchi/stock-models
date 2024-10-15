@@ -4,6 +4,7 @@ import pandas as pd
 import os
 import psycopg2
 from dotenv import load_dotenv
+import pytz
 
 
 def connect_to_db(env="prod"):
@@ -102,7 +103,7 @@ def insert_stock_metadata(ticker_symbol, metadata, cursor):
           metadata.get('regularMarketPrice'), metadata.get('fiftyTwoWeekHigh'), metadata.get('fiftyTwoWeekLow'),
           metadata.get('regularMarketDayHigh'), metadata.get('regularMarketDayLow'), metadata.get('regularMarketVolume'),
           metadata.get('longName'), metadata.get('shortName'), metadata.get('chartPreviousClose'),
-          metadata.get('timezone'), metadata.get('exchangeTimezoneName'), dt.datetime.now()))
+          metadata.get('timezone'), metadata.get('exchangeTimezoneName'), dt.datetime.now(pytz.timezone('US/Pacific'))))
 
 
 def insert_stock_news(ticker_symbol, news_data, cursor):
