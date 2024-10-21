@@ -10,7 +10,7 @@ I also built a database and UI to visualize stock data and model performance.
 <!-- - **data analysis/ML:** Python, Jupyter Notebook, scikit-learn -->
 
 ### hosted project
-[![stock-models](images/homepage.png)](https://stock-models.streamlit.app/)
+![stock-models](images/homepage.png)
 
 
 <!-- ### setup
